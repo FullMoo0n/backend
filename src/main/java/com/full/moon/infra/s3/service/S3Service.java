@@ -1,17 +1,16 @@
-package com.unithon.ddoeunyeong.infra.s3.service;
+package com.full.moon.infra.s3.service;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.unithon.ddoeunyeong.global.exception.CustomException;
-import com.unithon.ddoeunyeong.global.exception.ErrorCode;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import com.full.moon.global.exception.CustomException;
+import com.full.moon.global.exception.ErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
