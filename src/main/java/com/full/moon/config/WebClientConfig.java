@@ -23,6 +23,7 @@ public class WebClientConfig {
         return WebClient.builder().build();
     }
 
+
     // @Bean
     // public WebClient openAiClient(@Value("${gpt.api-key}") String apiKey) {
     //
