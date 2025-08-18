@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: ✅ Checkout Spring Code
-        uses: actions/checkout@v4
+        uses:  actions/checkout@v4
 
       - name: 🔐 application.properties 생성
         run: |
