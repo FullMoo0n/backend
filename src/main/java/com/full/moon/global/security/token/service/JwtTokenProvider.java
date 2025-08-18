@@ -17,7 +17,7 @@ import com.full.moon.domain.user.entitiy.User;
 import com.full.moon.domain.user.repository.UserRepository;
 import com.full.moon.global.exception.CustomException;
 import com.full.moon.global.exception.ErrorCode;
-import com.full.moon.global.security.config.CustomUserDetails;
+import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
 import com.full.moon.global.security.token.dto.TokenResponse;
 import com.full.moon.global.security.token.entity.RefreshToken;
 import com.full.moon.global.security.token.repository.RefreshTokenRepository;
@@ -35,8 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
-
-	//이걸 Oauth 유저가 아니라 -> 일반 사용자로 봐야함
 
 	private final UserRepository userRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
@@ -130,7 +128,6 @@ public class JwtTokenProvider {
 		}
 	}
 
-
 	public Authentication getAuthentication(String token) {
 		try {
 			Claims claims = Jwts.parser()
@@ -141,18 +138,18 @@ public class JwtTokenProvider {
 
 			String userId = claims.getSubject();
 			Long realUserId = Long.parseLong(userId);
-
 			User user = userRepository.findById(realUserId)
 				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-			CustomUserDetails principal = new CustomUserDetails(user);
+			Map<String, Object> attributes = Map.of("userId", userId);
+			CustomOAuth2User principal = new CustomOAuth2User(attributes, userId, user.getUserRole().name());
+
 			return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
 
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.LOGIN_FAIL);
 		}
 	}
-
 
 	public boolean validateToken(String token) {
 		try {
@@ -164,5 +161,16 @@ public class JwtTokenProvider {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	public TokenResponse makeNewAccessToken(String refreshToken){
+
+		String userId = getUserIdFromToken(refreshToken);
+
+		if(!userRepository.existsById(Long.parseLong(userId))){
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		return createToken(userId);
 	}
 }

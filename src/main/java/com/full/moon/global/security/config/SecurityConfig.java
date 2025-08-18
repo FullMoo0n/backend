@@ -57,7 +57,6 @@ public class SecurityConfig {
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
 				})
 			);
-
 			// .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
 			// 	UsernamePasswordAuthenticationFilter.class);
 

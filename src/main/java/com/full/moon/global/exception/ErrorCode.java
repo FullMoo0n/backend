@@ -26,7 +26,7 @@ public enum ErrorCode {
 	OPENAI_COMM_FAIL(BAD_REQUEST,419,"OPENAI 일반적인 오류"),
 	OPENAI_PARSE_FAIL(BAD_REQUEST,420,"OPENAI 파싱 오류"),
 
-
+	SAVE_ERROR(BAD_REQUEST,421,"회원가입에 실패하였습니다."),
 
 
 

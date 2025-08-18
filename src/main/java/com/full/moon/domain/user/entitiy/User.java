@@ -1,14 +1,16 @@
 package com.full.moon.domain.user.entitiy;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -16,26 +18,25 @@ import lombok.Setter;
 public class User {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
-	private String userId;
-
-	@Column(nullable = false)
-	@Setter
-	private String password;
-
 	private String name;
+
+	private String email;
+
+	@Enumerated(EnumType.STRING)
+	private Domain provider;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private UserRole userRole;
 
 	@Builder
-	private User(String userId, String password, UserRole userRole,String name){
-		this.userId = userId;
-		this.password = password;
+	private User(UserRole userRole,String name, Domain provider,String email){
 		this.userRole = userRole;
 		this.name = name;
+		this.provider = provider;
+		this.email = email;
 	}
 }
