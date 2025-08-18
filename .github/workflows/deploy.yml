@@ -11,10 +11,9 @@ jobs:
 
     steps:
       - name: ✅ Checkout Spring Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🔐 application.properties 생성
-        working-directory: ./moon
         run: |
           mkdir -p src/main/resources
           echo "spring.datasource.url=${{ secrets.DB_URL }}" >> src/main/resources/application.properties
@@ -50,7 +49,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: 📦 Build & Push Docker image (safe version, no cache)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
