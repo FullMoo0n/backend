@@ -2,68 +2,83 @@ name: Deploy Spring Backend
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ Checkout Spring Code
-        uses: actions/checkout@v3
+      - name: "✅ Checkout Spring Code"
+        uses: actions/checkout@v4
 
-      - name: 🔐 application.properties 생성
+      - name: "☕ Setup Java 17"
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: "🧰 Setup Gradle (cache)"
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: "🔐 Create application.properties"
+        shell: bash
         run: |
           mkdir -p src/main/resources
-          echo "spring.datasource.url=${{ secrets.DB_URL }}" >> src/main/resources/application.properties
-          echo "spring.datasource.username=${{ secrets.DB_USERNAME }}" >> src/main/resources/application.properties
-          echo "spring.datasource.password=${{ secrets.DB_PASSWORD }}" >> src/main/resources/application.properties
-          echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> src/main/resources/application.properties
-          echo "spring.jpa.hibernate.ddl-auto=update" >> src/main/resources/application.properties
-          echo "spring.jpa.show-sql=false" >> src/main/resources/application.properties
-          echo "spring.jpa.properties.hibernate.format_sql=true" >> src/main/resources/application.properties
-          echo "spring.jwt.secret=${{ secrets.JWT_SECRET }}" >> src/main/resources/application.properties
-          echo "spring.jwt.access-token-duration=10D" >> src/main/resources/application.properties
-          echo "spring.jwt.refresh-token-duration=100D" >> src/main/resources/application.properties
+          cat > src/main/resources/application.properties <<'PROPS'
+          spring.datasource.url=${{ secrets.DB_URL }}
+          spring.datasource.username=${{ secrets.DB_USERNAME }}
+          spring.datasource.password=${{ secrets.DB_PASSWORD }}
+          spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-#          echo "gpt.api-key=Bearer ${{ secrets.OPENAI_KEY }}" >> src/main/resources/application.properties
-#          echo "ai.url=${{ secrets.AI_URL }}" >> src/main/resources/application.properties
+          spring.jpa.hibernate.ddl-auto=update
+          spring.jpa.show-sql=false
+          spring.jpa.properties.hibernate.format_sql=true
 
+          spring.jwt.secret=${{ secrets.JWT_SECRET }}
+          spring.jwt.access-token-duration=10D
+          spring.jwt.refresh-token-duration=100D
 
-          echo "cloud.aws.s3.bucket=${{ secrets.S3_BUCKET_NAME }}" >> src/main/resources/application.properties
-          echo "cloud.aws.region.static=${{ secrets.S3_BUCKET_REGION }}" >> src/main/resources/application.properties
-          echo "cloud.aws.stack.auto=false" >> src/main/resources/application.properties
-          echo "cloud.aws.credentials.access-key=${{ secrets.AWS_ACCESS_KEY_ID }}" >> src/main/resources/application.properties
-          echo "cloud.aws.credentials.secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> src/main/resources/application.properties
+#          gpt.api-key=Bearer ${{ secrets.OPENAI_KEY }}
+#          ai.url=${{ secrets.AI_URL }}
 
+          cloud.aws.s3.bucket=${{ secrets.S3_BUCKET_NAME }}
+          cloud.aws.region.static=${{ secrets.S3_BUCKET_REGION }}
+          cloud.aws.stack.auto=false
+          cloud.aws.credentials.access-key=${{ secrets.AWS_ACCESS_KEY_ID }}
+          cloud.aws.credentials.secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          PROPS
+          echo "[info] application.properties written."
 
+      - name: "🔧 Make Gradle executable"
+        run: chmod +x ./gradlew
 
+      - name: "🏗️ Build (Jar)"
+        run: ./gradlew clean build -x test
 
-      - name: ☕ Gradle Build (jar 생성)
-        run: ./gradlew build -x test
-
-      - name: 🐳 Docker Hub 로그인
-        uses: docker/login-action@v2
+      - name: "🐳 Docker Hub Login"
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 📦 Build & Push Docker image (safe version, no cache)
+      - name: "📦 Build & Push Docker image"
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/moon:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/unithon:latest
 
-      - name: 🚀 EC2에 SSH 접속 후 backend 재배포
+      - name: "🚀 SSH to EC2 and redeploy"
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}E
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
             cd ~/my-app
             docker compose pull backend
             docker compose up -d backend
+            docker image prune -f
