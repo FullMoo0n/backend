@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: ✅ Checkout Spring Code
         uses: actions/checkout@v4
+
       - name: 🔐 application.properties 생성
         run: |
           mkdir -p src/main/resources
@@ -53,7 +54,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/moon:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/unithon:latest
 
       - name: 🚀 EC2에 SSH 접속 후 backend 재배포
         uses: appleboy/ssh-action@v0.1.6
