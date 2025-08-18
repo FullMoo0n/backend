@@ -1,5 +1,6 @@
 package com.full.moon.global.exception;
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,10 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomExceptionHandler {
 
+
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<BaseResponse<Object>> handleCustomException(CustomException e){
-
-        log.error("CustomException 발생 " ,e);
+        log.error(e.getMessage(),e);
         BaseResponse<Object> response = BaseResponse.builder()
             .isSuccess(false)
             .code(e.getErrorCode().getCode())
@@ -23,6 +24,19 @@ public class CustomExceptionHandler {
             .build();
         return new ResponseEntity<>(response,e.getErrorCode().getStatus());
     }
+
+    @ExceptionHandler(LoginException.class)
+    public ResponseEntity<BaseResponse<Object>> handleLoginException(LoginException e){
+        log.error(e.getMessage(),e);
+        BaseResponse<Object> response = BaseResponse.builder()
+            .isSuccess(false)
+            .code(e.getCode())
+            .message(e.getMessage())
+            .data(e.getErrorResponse())
+            .build();
+        return new ResponseEntity<>(response,e.getStatus());
+    }
+
 
 
     @ExceptionHandler(Exception.class)
