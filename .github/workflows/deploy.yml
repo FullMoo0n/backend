@@ -14,6 +14,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🔐 application.properties 생성
+        working-directory: ./moon
         run: |
           mkdir -p src/main/resources
           echo "spring.datasource.url=${{ secrets.DB_URL }}" >> src/main/resources/application.properties
@@ -54,7 +55,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/unithon:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/moon:latest
 
       - name: 🚀 EC2에 SSH 접속 후 backend 재배포
         uses: appleboy/ssh-action@v0.1.6
