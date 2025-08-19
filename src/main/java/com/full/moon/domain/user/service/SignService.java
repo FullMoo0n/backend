@@ -28,7 +28,7 @@ public class SignService {
 
 		if(!userRepository.existsByEmail(email)){
 			throw new LoginException(
-				HttpStatus.NOT_FOUND,404,"유저가 존재하지 않습니다. 회원가입이 필요합니다.",new LoginErrorResponse(email,domain));
+				HttpStatus.CREATED,201,"유저가 존재하지 않습니다. 회원가입이 필요합니다.",new LoginErrorResponse(email,domain));
 		}
 
 		return userRepository.findByEmail(email)
