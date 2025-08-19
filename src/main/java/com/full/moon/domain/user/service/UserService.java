@@ -40,11 +40,9 @@ public class UserService {
 
 
 	public TokenResponse loginWithGoogle(LoginRequest request){
-		GoogleUserResponse googleUserResponse = getUserInfo(request.token());
-		User user = signService.saveUser(googleUserResponse.getEmail(),domain);
+		User user = signService.saveUser(request.email(), domain);
 		return jwtTokenProvider.createToken(user.getId().toString());
 	}
-
 
 	private GoogleUserResponse getUserInfo(String accessToken) {
 		String url = "https://www.googleapis.com/oauth2/v2/userinfo";
@@ -63,7 +61,7 @@ public class UserService {
 				throw new CustomException(ErrorCode.USER_NOT_FOUND);
 			}
 		} catch (Exception e) {
-			throw new CustomException(ErrorCode.KAKAO_USER_ERROR);
+			throw new CustomException(ErrorCode.GOOGLE_USER_ERROR);
 		}
 	}
 
