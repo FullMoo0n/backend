@@ -19,11 +19,13 @@ import com.full.moon.global.exception.BaseResponse;
 import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/child")
 @RequiredArgsConstructor
+@Tag(name = "유저와 관련된 API")
 public class ChildController {
 
 	private final ChildService childService;
