@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import com.full.moon.global.security.token.service.JwtAuthenticationFilter;
 import com.full.moon.global.security.token.service.JwtTokenProvider;
 
 
@@ -56,9 +57,9 @@ public class SecurityConfig {
 				.authenticationEntryPoint((request, response, authException) -> {
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
 				})
-			);
-			// .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-			// 	UsernamePasswordAuthenticationFilter.class);
+			)
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

@@ -13,13 +13,13 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class SwaggerConfig {
 	@Bean
 	public OpenAPI openAPI() {
-		// SecurityRequirement securityRequirement = new SecurityRequirement().addList("BearerAuth");
+		SecurityRequirement securityRequirement = new SecurityRequirement().addList("BearerAuth");
 
 		return new OpenAPI()
 			.components(new Components())
 			.info(apiInfo())
-			// .addSecurityItem(securityRequirement)
-			// .schemaRequirement("BearerAuth", securityScheme())
+			.addSecurityItem(securityRequirement)
+			.schemaRequirement("BearerAuth", securityScheme())
 		;
 	}
 
