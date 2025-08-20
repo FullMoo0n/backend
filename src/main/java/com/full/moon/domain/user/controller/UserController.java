@@ -1,5 +1,7 @@
 package com.full.moon.domain.user.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,7 @@ import com.full.moon.domain.user.dto.LoginRequest;
 import com.full.moon.domain.user.dto.SignUpRequest;
 import com.full.moon.domain.user.service.UserService;
 import com.full.moon.global.exception.BaseResponse;
+import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
 import com.full.moon.global.security.token.dto.TokenResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,8 +50,18 @@ public class UserController {
 	}
 
 	//회원탈퇴
+	@Operation(summary = "회원탈퇴 API")
+	@DeleteMapping("/signout")
+	public BaseResponse<Void> singOut(@AuthenticationPrincipal CustomOAuth2User customOAuth2User){
+		return userService.signOutUser(customOAuth2User);
+	}
+
 
 	//로그아웃
-
+	@Operation(summary = "로그아웃 API")
+	@PostMapping("/logout")
+	public BaseResponse<Void> logout(@AuthenticationPrincipal CustomOAuth2User customOAuth2User){
+		return userService.logOutUser(customOAuth2User);
+	}
 	//회원 정보 수정
 }
