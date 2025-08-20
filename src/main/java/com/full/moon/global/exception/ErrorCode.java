@@ -8,6 +8,8 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
+
+	NO_BOOK(BAD_REQUEST,422,"존재하지 않는 책입니다,"),
 	ALREADY_SIGNUP(BAD_REQUEST,410,"이미 가입된 회원입니다."),
 
 
