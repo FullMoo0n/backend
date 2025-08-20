@@ -31,6 +31,7 @@ public class SignService {
 				HttpStatus.CREATED,201,"유저가 존재하지 않습니다. 회원가입이 필요합니다.",new LoginErrorResponse(email,domain));
 		}
 
+
 		return userRepository.findByEmail(email)
 			.orElseThrow(()->new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
