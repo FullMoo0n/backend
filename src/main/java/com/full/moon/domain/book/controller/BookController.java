@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.full.moon.domain.book.dto.BookResponse;
+import com.full.moon.domain.book.dto.BookTriple;
 import com.full.moon.domain.book.service.BookService;
 import com.full.moon.global.exception.BaseResponse;
 import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
@@ -88,15 +89,20 @@ public class BookController {
 
 	//모든 책 가져오기
 	@GetMapping("")
-	@Operation(summary = "소유주 상관없이 모든 책을 가져오는 API")
-	public BaseResponse<Page<BookResponse>> getAllBook(@AuthenticationPrincipal CustomOAuth2User customOAuth2User,
-		@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
-		Pageable pageable){
-		return BaseResponse.<Page<BookResponse>>builder()
+	@Operation(summary = "소유주 상관없이 모든 책을 3개 묶음으로 랜덤 제공")
+	public BaseResponse<Page<BookTriple>> getAllBook(
+		@AuthenticationPrincipal CustomOAuth2User customOAuth2User,
+		// 한 페이지에 "묶음"이 몇 개인지. 예: 6묶음(=최대 18권)
+		@PageableDefault(size = 6, sort = "createdAt", direction = Sort.Direction.DESC)
+		Pageable pageable) {
+
+		Page<BookTriple> page = bookService.getAllBookGrouped(customOAuth2User, pageable);
+
+		return BaseResponse.<Page<BookTriple>>builder()
 			.isSuccess(true)
 			.code(200)
-			.message("소유주 상관없이 모든 책을 가져왔습니다.")
-			.data(bookService.getAllBook(customOAuth2User,pageable))
+			.message("소유주 상관없이 모든 책을 3개 묶음으로 랜덤 제공했습니다.")
+			.data(page)
 			.build();
 	}
 

@@ -1,11 +1,19 @@
 package com.full.moon.domain.book.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.full.moon.domain.book.dto.BookResponse;
+import com.full.moon.domain.book.dto.BookTriple;
 import com.full.moon.domain.book.entitiy.Book;
 import com.full.moon.domain.book.repository.BookRepository;
 import com.full.moon.domain.child.entity.Child;
@@ -72,10 +80,47 @@ public class BookService {
 	}
 
 
-	public Page<BookResponse> getAllBook(CustomOAuth2User customOAuth2User,Pageable pageable){
+	// public Page<BookResponse> getAllBook(CustomOAuth2User customOAuth2User,Pageable pageable){
+	//
+	// 	return bookRepository.findAll(pageable)
+	// 		.map(book -> new BookResponse(book.getId(),book.getTitle(),book.getBookCoverUrl()));
+	// }
 
-		return bookRepository.findAll(pageable)
-			.map(book -> new BookResponse(book.getId(),book.getTitle(),book.getBookCoverUrl()));
+	public Page<BookTriple> getAllBookGrouped(CustomOAuth2User user, Pageable groupPageable) {
+		final int GROUP_SIZE = 3;
+
+		// 클라이언트가 "묶음 페이지 크기"로 넘긴 값을 책 페이지 크기로 환산
+		int groupsPerPage = groupPageable.getPageSize();      // 예: 6 묶음/페이지
+		int booksPerPage  = groupsPerPage * GROUP_SIZE;       // 예: 18 권/페이지
+
+		// 정렬 그대로 유지 (없으면 createdAt DESC 기본)
+		Sort sort = groupPageable.getSort().isSorted()
+			? groupPageable.getSort()
+			: Sort.by(Sort.Direction.DESC, "createdAt");
+
+		Pageable bookPageable = PageRequest.of(groupPageable.getPageNumber(), booksPerPage, sort);
+
+		Page<Book> bookPage = bookRepository.findAll(bookPageable);
+
+		// Book -> BookResponse
+		List<BookResponse> list = bookPage.getContent().stream()
+			.map(b -> new BookResponse(b.getId(), b.getTitle(), b.getBookCoverUrl()))
+			.toList();
+
+		// 페이지 내에서 랜덤 셔플
+		Collections.shuffle(list);
+
+		// 3개씩 묶기
+		List<BookTriple> triples = new ArrayList<>();
+		for (int i = 0; i < list.size(); i += GROUP_SIZE) {
+			triples.add(new BookTriple(list.subList(i, Math.min(i + GROUP_SIZE, list.size()))));
+		}
+
+		// 전체 묶음 개수 = ceil(전체 책 수 / 3)
+		long totalBooks  = bookPage.getTotalElements();
+		long totalGroups = (totalBooks + GROUP_SIZE - 1) / GROUP_SIZE;
+
+		return new PageImpl<>(triples, groupPageable, totalGroups);
 	}
 
 

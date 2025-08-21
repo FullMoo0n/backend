@@ -65,15 +65,19 @@ dependencies {
 	implementation 'org.springframework.session:spring-session-data-redis'
 
 	//S3
-	implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.4'
-	implementation 'software.amazon.awssdk:s3:2.25.1'
-	implementation 'software.amazon.awssdk:auth:2.25.1'
+	implementation platform("software.amazon.awssdk:bom:2.25.39") // 최신 권장
+	implementation "software.amazon.awssdk:s3"
+	implementation "software.amazon.awssdk:s3-transfer-manager"
+	implementation "software.amazon.awssdk:netty-nio-client"
 
 	//http5
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
 
 
 
+}
+configurations.configureEach {
+	exclude group: "com.amazonaws", module: "aws-java-sdk-s3"
 }
 
 tasks.named('test') {

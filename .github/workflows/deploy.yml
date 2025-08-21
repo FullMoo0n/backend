@@ -32,6 +32,12 @@ jobs:
           echo "cloud.aws.stack.auto=false" >> src/main/resources/application.properties
           echo "cloud.aws.credentials.access-key=${{ secrets.AWS_ACCESS_KEY_ID }}" >> src/main/resources/application.properties
           echo "cloud.aws.credentials.secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> src/main/resources/application.properties
+          
+          echo "spring.servlet.multipart.max-file-size=2GB" >> src/main/resources/application.properties
+          echo "spring.servlet.multipart.max-request-size=2GB" >> src/main/resources/application.properties
+          echo "spring.servlet.multipart.file-size-threshold=2MB" >> src/main/resources/application.properties
+          echo "server.tomcat.max-swallow-size=-1" >> src/main/resources/application.properties
+          echo "server.tomcat.max-http-form-post-size=-1" >> src/main/resources/application.properties
 
       - name: ☕ Gradle Build (jar 생성)
         run: ./gradlew build -x test
