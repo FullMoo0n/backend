@@ -94,11 +94,9 @@ public class BookService {
 	public Page<BookTriple> getAllBookGrouped(CustomOAuth2User user, Pageable groupPageable) {
 		final int GROUP_SIZE = 3;
 
-		// 클라이언트가 "묶음 페이지 크기"로 넘긴 값을 책 페이지 크기로 환산
-		int groupsPerPage = groupPageable.getPageSize();      // 예: 6 묶음/페이지
-		int booksPerPage  = groupsPerPage * GROUP_SIZE;       // 예: 18 권/페이지
+		int groupsPerPage = groupPageable.getPageSize();
+		int booksPerPage  = groupsPerPage * GROUP_SIZE;
 
-		// 정렬 그대로 유지 (없으면 createdAt DESC 기본)
 		Sort sort = groupPageable.getSort().isSorted()
 			? groupPageable.getSort()
 			: Sort.by(Sort.Direction.DESC, "createdAt");
@@ -107,27 +105,36 @@ public class BookService {
 
 		Page<Book> bookPage = bookRepository.findAll(bookPageable);
 
-		// Book -> BookResponse
+		// ✅ 가변 리스트로 수집 (두 방법 중 하나 사용)
 		List<BookResponse> list = bookPage.getContent().stream()
 			.map(b -> new BookResponse(b.getId(), b.getTitle(), b.getBookCoverUrl()))
-			.toList();
+			.collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+		// 또는: new ArrayList<>( ...stream().map(...).toList() )
 
-		// 페이지 내에서 랜덤 셔플
+		// ✅ 이제 셔플 가능
 		Collections.shuffle(list);
 
-		// 3개씩 묶기
+		// 3개씩 묶기 (BookTriple에 안전하게 넘기도록 '복사본'을 전달)
 		List<BookTriple> triples = new ArrayList<>();
 		for (int i = 0; i < list.size(); i += GROUP_SIZE) {
-			triples.add(new BookTriple(list.subList(i, Math.min(i + GROUP_SIZE, list.size()))));
+			List<BookResponse> chunk = list.subList(i, Math.min(i + GROUP_SIZE, list.size()));
+			triples.add(new BookTriple(new ArrayList<>(chunk))); // ✅ 방어적 복사
+			// 필요 시 완전 불변을 원하면: List.copyOf(chunk)
 		}
 
-		// 전체 묶음 개수 = ceil(전체 책 수 / 3)
 		long totalBooks  = bookPage.getTotalElements();
 		long totalGroups = (totalBooks + GROUP_SIZE - 1) / GROUP_SIZE;
 
 		return new PageImpl<>(triples, groupPageable, totalGroups);
 	}
 
+
+	public List<BookResponse> getRandom3Books() {
+		List<Book> books = bookRepository.findRandom3();
+		return books.stream()
+			.map(b -> new BookResponse(b.getId(), b.getTitle(), b.getBookCoverUrl()))
+			.toList();
+	}
 
 
 	@Transactional
