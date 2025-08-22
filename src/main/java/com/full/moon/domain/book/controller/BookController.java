@@ -63,12 +63,17 @@ public class BookController {
 	}
 
 	//다른 사람 책을 자신의 책 꽂이에 추가
-	//여기서 이제 그냥 clone을 할지 공유되게끔 할지 고민을 좀 해야겠다
-	// @PostMapping("/new")
-	// @Operation(summary = "다른 사람 책을 자신의 책 꽂이에 추가")
-	// public BaseResponse<?> getOtherBook(@AuthenticationPrincipal CustomOAuth2User customOAuth2User,@RequestParam Long friendsBookId,@RequestParam Long childId){
-	//
-	// }
+	@PostMapping("/share")
+	@Operation(summary = "다른 사람 책을 자신의 책 꽂이에 추가")
+	public BaseResponse<Void> getOtherBook(@AuthenticationPrincipal CustomOAuth2User customOAuth2User,@RequestParam Long friendsBookId,@RequestParam Long childId){
+
+		return BaseResponse.<Void>builder()
+			.code(200)
+			.message("다른 사람을 책을 공유받았습니다.")
+			.isSuccess(true)
+			.data(bookService.shareBook(customOAuth2User, friendsBookId, childId))
+			.build();
+	}
 
 
 	//갖고 있는 책 전체적으로 가져오기
