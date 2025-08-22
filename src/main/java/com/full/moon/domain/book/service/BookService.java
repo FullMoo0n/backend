@@ -10,12 +10,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.full.moon.domain.book.dto.BookResponse;
 import com.full.moon.domain.book.dto.BookTriple;
 import com.full.moon.domain.book.entitiy.Book;
 import com.full.moon.domain.book.repository.BookRepository;
+import com.full.moon.domain.bookpage.entitiy.BookPage;
+import com.full.moon.domain.bookpage.repository.BookPageRepository;
 import com.full.moon.domain.child.entity.Child;
 import com.full.moon.domain.child.repository.ChildRepository;
 import com.full.moon.domain.user.entitiy.User;
@@ -26,6 +29,7 @@ import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
 import com.full.moon.global.utils.UserUtils;
 import com.full.moon.infra.s3.service.S3Service;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,6 +41,7 @@ public class BookService {
 	private final UserRepository userRepository;
 	private final ChildRepository childRepository;
 	private final UserUtils userUtils;
+	private final BookPageRepository bookPageRepository;
 
 
 	public BookResponse makeBook(CustomOAuth2User customOAuth2User, MultipartFile file, String title, Long childId){
@@ -121,6 +126,36 @@ public class BookService {
 		long totalGroups = (totalBooks + GROUP_SIZE - 1) / GROUP_SIZE;
 
 		return new PageImpl<>(triples, groupPageable, totalGroups);
+	}
+
+
+
+	@Transactional
+	public Void shareBook(CustomOAuth2User customOAuth2User,  Long friendBook, Long childId){
+		User user = userUtils.findUser(customOAuth2User);
+
+		Child child = findChild(childId,user);
+
+		Book book = bookRepository.findById(friendBook)
+			.orElseThrow(()-> new CustomException(ErrorCode.NO_BOOK));
+
+		List<BookPage> bookPages = bookPageRepository.findAllByBook(book);
+
+		Book newBook = Book.builder()
+			.child(child)
+			.title(book.getTitle())
+			.bookCoverUrl(book.getBookCoverUrl())
+			.build();
+
+		bookRepository.save(newBook);
+
+		List<BookPage> newBookPages = bookPages.stream()
+			.map(old ->{
+				BookPage newBookPage =  BookPage.builder().videoUrl(old.getVideoUrl()).originalImageUrl(old.getOriginalImageUrl()).book(newBook).build();
+				return bookPageRepository.save(newBookPage);
+			})
+			.toList();
+		return null;
 	}
 
 

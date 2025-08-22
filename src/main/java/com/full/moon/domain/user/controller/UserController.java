@@ -34,7 +34,7 @@ public class UserController {
 			.code(200)
 			.data(userService.saveRealUser(request))
 			.isSuccess(true)
-			.message("로그인에 성공하였습니다.").build();
+			.message("회원가입에 성공하였습니다.").build();
 	}
 
 

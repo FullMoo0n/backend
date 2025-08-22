@@ -1,5 +1,7 @@
 package com.full.moon.domain.bookpage.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +12,6 @@ import com.full.moon.domain.bookpage.entitiy.BookPage;
 public interface BookPageRepository extends JpaRepository<BookPage, Long> {
 
 	Page<BookPage> findAllByBook(Book book, Pageable pageable);
+	List<BookPage> findAllByBook(Book book);
+
 }
