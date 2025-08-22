@@ -37,32 +37,31 @@ public class S3Service {
 	private String secretKey;
 
 	public String uploadFile(MultipartFile file) {
-
 		S3Client s3 = S3Client.builder()
 			.region(Region.of(region))
 			.credentialsProvider(StaticCredentialsProvider.create(
-				AwsBasicCredentials.create(accessKey, secretKey)
-			))
+				AwsBasicCredentials.create(accessKey, secretKey)))
 			.build();
 
 		try {
-			String fileName = "uploads/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+			String rawName = file.getOriginalFilename();              // 원본 파일명
+			String safeName = URLEncoder.encode(rawName, StandardCharsets.UTF_8)
+				.replace("+", "%20");                             // 공백을 %20로
+			String key = "test_images/" + UUID.randomUUID() + "_" + safeName;
 
-			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+			PutObjectRequest put = PutObjectRequest.builder()
 				.bucket(bucketName)
-				.key(fileName)
+				.key(key)
 				.contentType(file.getContentType())
+				// 공개 URL로 바로 접근하려면 주석 해제
+				// .acl(ObjectCannedACL.PUBLIC_READ)
 				.build();
 
-			PutObjectResponse response = s3.putObject(
-				putObjectRequest,
-				software.amazon.awssdk.core.sync.RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-			);
+			s3.putObject(put, software.amazon.awssdk.core.sync.RequestBody
+				.fromInputStream(file.getInputStream(), file.getSize()));
 
-			log.info("S3 Upload Response: {}", response);
-			String fileUrl = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + URLEncoder.encode(fileName,
-				StandardCharsets.UTF_8);
-
+			// ⚠️ 여기서는 절대 다시 인코딩하지 말 것
+			String fileUrl = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
 			return fileUrl;
 
 		} catch (S3Exception | IOException e) {

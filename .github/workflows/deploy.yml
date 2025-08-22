@@ -38,6 +38,7 @@ jobs:
           echo "spring.servlet.multipart.file-size-threshold=2MB" >> src/main/resources/application.properties
           echo "server.tomcat.max-swallow-size=-1" >> src/main/resources/application.properties
           echo "server.tomcat.max-http-form-post-size=-1" >> src/main/resources/application.properties
+          echo "fastapi.base-url=${{ secrets.FASTAPI_BASE_URL }}" >> src/main/resources/application.properties
 
       - name: ☕ Gradle Build (jar 생성)
         run: ./gradlew build -x test

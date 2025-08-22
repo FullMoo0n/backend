@@ -1,11 +1,13 @@
 package com.full.moon.config;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -47,4 +49,41 @@ public class WebClientConfig {
     //         .exchangeStrategies(strategies)
     //         .build();
     // }
+
+        // @Bean
+        // public WebClient fastApiWebClient(
+        //     @Value("${fastapi.base-url}") String baseUrl
+        // ) {
+        //     HttpClient httpClient = HttpClient.create()
+        //         .responseTimeout(java.time.Duration.ofSeconds(300));
+        //
+        //     return WebClient.builder()
+        //         .baseUrl(baseUrl) // 예: http://localhost:8000  또는 http://fastapi:8000 (docker)
+        //         .clientConnector(new ReactorClientHttpConnector(httpClient))
+        //         .codecs(cfg -> cfg.defaultCodecs().maxInMemorySize(100 * 1024 * 1024)) // 2MB
+        //         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        //         .build();
+        // }
+
+
+    @Bean
+    public WebClient fastApiWebClient(@Value("${fastapi.base-url}") String baseUrl) {
+        HttpClient httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
+            // 서버가 5분 걸리므로 넉넉히 6분
+            .responseTimeout(Duration.ofMinutes(6))
+            .doOnConnected(conn -> {
+                conn.addHandlerLast(new ReadTimeoutHandler(6, TimeUnit.MINUTES));
+                conn.addHandlerLast(new WriteTimeoutHandler(6, TimeUnit.MINUTES));
+            });
+
+        return WebClient.builder()
+            .baseUrl(baseUrl) // 예: http://localhost:8000 또는 docker 내부면 http://fastapi:8000
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            // 큰 응답 대비(필요 시)
+            .codecs(c -> c.defaultCodecs().maxInMemorySize(4 * 1024 * 1024)) // 4MB
+            .build();
+    }
+
 }
