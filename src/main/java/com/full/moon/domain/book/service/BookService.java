@@ -65,6 +65,7 @@ public class BookService {
 	}
 
 
+	@Transactional
 	public Void deleteBook(CustomOAuth2User customOAuth2User,Long childId, Long bookId){
 
 		Child child = findChild(childId,userUtils.findUser(customOAuth2User));

@@ -17,7 +17,7 @@ public interface BookPageRepository extends JpaRepository<BookPage, Long> {
 	Page<BookPage> findAllByBook(Book book, Pageable pageable);
 	List<BookPage> findAllByBook(Book book);
 
-	@Modifying
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("delete from BookPage p where p.book.id = :bookId")
 	void deleteByBookId(@Param("bookId") Long bookId);
 
