@@ -70,7 +70,7 @@ public class BookService {
 		Child child = findChild(childId,userUtils.findUser(customOAuth2User));
 
 		Book book = findBook(bookId,child);
-
+		bookPageRepository.deleteByBookId(book.getId());
 		bookRepository.delete(book);
 
 		return null;
