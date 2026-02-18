@@ -14,7 +14,7 @@ import com.full.moon.domain.user.repository.UserRepository;
 import com.full.moon.global.exception.CustomException;
 import com.full.moon.global.exception.ErrorCode;
 import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
-import com.full.moon.infra.s3.service.S3Service;
+import com.full.moon.infra.azure.service.AzureStorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +24,7 @@ public class ChildService {
 
 	private final ChildRepository childRepository;
 	private final UserRepository userRepository;
-	private final S3Service s3Service;
+	private final AzureStorageService azureStorageService;
 
 
 	public ChildResponse makeChild(CustomOAuth2User customOAuth2User, MultipartFile file, String name){
@@ -32,7 +32,7 @@ public class ChildService {
 		User user =  userRepository.findById(Long.parseLong(customOAuth2User.getUserId()))
 			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		String imgUrl = s3Service.uploadFile(file);
+		String imgUrl = azureStorageService.uploadFile(file);
 
 		Child child = Child.builder()
 			.name(name)
@@ -76,7 +76,7 @@ public class ChildService {
 		Child child = childRepository.findByIdAndUser(childId,user)
 			.orElseThrow(()->new CustomException(ErrorCode.NO_CHILD));
 
-		String imgUrl = s3Service.uploadFile(file);
+		String imgUrl = azureStorageService.uploadFile(file);
 
 		child.setName(name);
 		child.setPhotoUrl(imgUrl);

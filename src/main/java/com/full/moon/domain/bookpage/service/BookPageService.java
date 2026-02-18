@@ -26,7 +26,7 @@ import com.full.moon.global.exception.CustomException;
 import com.full.moon.global.exception.ErrorCode;
 import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
 import com.full.moon.global.utils.UserUtils;
-import com.full.moon.infra.s3.service.S3Service;
+import com.full.moon.infra.azure.service.AzureStorageService;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -39,7 +39,7 @@ public class BookPageService {
 	private final BookPageRepository bookPageRepository;
 	private final ChildRepository childRepository;
 	private final BookRepository bookRepository;
-	private final S3Service s3Service;
+	private final AzureStorageService azureStorageService;
 	private final UserUtils userUtils;
 	private final WebClient fastApiWebClient;
 
@@ -54,7 +54,7 @@ public class BookPageService {
 		Book book = bookRepository.findByIdAndChild(bookId,child)
 			.orElseThrow(()->new CustomException(ErrorCode.NO_BOOK));
 
-		String imgUrl = s3Service.uploadFile(file);
+		String imgUrl = azureStorageService.uploadFile(file);
 		//여기서 FastAPI server로 요청보냄
 
 		String videoUrl = processBlocking(imgUrl);

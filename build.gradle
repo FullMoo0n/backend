@@ -64,11 +64,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.session:spring-session-data-redis'
 
-	//S3
-	implementation platform("software.amazon.awssdk:bom:2.25.39") // 최신 권장
-	implementation "software.amazon.awssdk:s3"
-	implementation "software.amazon.awssdk:s3-transfer-manager"
-	implementation "software.amazon.awssdk:netty-nio-client"
+	//Azure Storage
+	implementation 'com.azure.spring:spring-cloud-azure-starter-storage-blob:5.19.0'
 
 	//http5
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
@@ -76,9 +73,7 @@ dependencies {
 
 
 }
-configurations.configureEach {
-	exclude group: "com.amazonaws", module: "aws-java-sdk-s3"
-}
+
 
 tasks.named('test') {
 	useJUnitPlatform()

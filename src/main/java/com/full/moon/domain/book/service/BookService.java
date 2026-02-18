@@ -27,7 +27,7 @@ import com.full.moon.global.exception.CustomException;
 import com.full.moon.global.exception.ErrorCode;
 import com.full.moon.global.security.oauth.entity.CustomOAuth2User;
 import com.full.moon.global.utils.UserUtils;
-import com.full.moon.infra.s3.service.S3Service;
+import com.full.moon.infra.azure.service.AzureStorageService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class BookService {
 
 	private final BookRepository bookRepository;
-	private final S3Service s3Service;
+	private final AzureStorageService azureStorageService;
 	private final UserRepository userRepository;
 	private final ChildRepository childRepository;
 	private final UserUtils userUtils;
@@ -51,7 +51,7 @@ public class BookService {
 
 		Child child = findChild(childId,user);
 
-		String imgUrl = s3Service.uploadFile(file);
+		String imgUrl = azureStorageService.uploadFile(file);
 
 		Book book = Book.builder()
 			.bookCoverUrl(imgUrl)
